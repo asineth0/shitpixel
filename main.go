@@ -22,7 +22,7 @@ func fromVarint(bytes []byte) (int, int) {
 }
 
 func toVarint(n int) []byte {
-	res := []byte{}
+	var res []byte
 
 	for n != 0 {
 		tmp := n & 0b01111111
@@ -39,7 +39,7 @@ func toVarint(n int) []byte {
 }
 
 func toString(s string) []byte {
-	out := []byte{}
+	var out []byte
 	out = append(out, toVarint(len(s))...)
 	out = append(out, []byte(s)...)
 
@@ -54,7 +54,7 @@ func toShort(n int) []byte {
 }
 
 func readPacket(c net.Conn) ([]byte, error) {
-	lenBytes := []byte{}
+	var lenBytes []byte
 	for {
 		b := make([]byte, 1)
 		c.Read(b)
@@ -66,7 +66,7 @@ func readPacket(c net.Conn) ([]byte, error) {
 	}
 
 	pLen, _ := fromVarint(lenBytes)
-	pData := []byte{}
+	var pData []byte
 
 	recv := 0
 	tmp := make([]byte, 1024)
@@ -94,7 +94,7 @@ func writePacket(c net.Conn, b []byte) {
 }
 
 func newPacket(b []byte) []byte {
-	out := []byte{}
+	var out []byte
 	out = append(out, toVarint(len(b))...)
 	out = append(out, b...)
 
@@ -102,7 +102,7 @@ func newPacket(b []byte) []byte {
 }
 
 func newHandshake(proto int, addr string, port int, state int) []byte {
-	p := []byte{}
+	var p []byte
 	p = append(p, 0)
 	p = append(p, toVarint(proto)...)
 	p = append(p, toString(addr)...)
@@ -117,7 +117,7 @@ func newRequest() []byte {
 }
 
 func newPing(b []byte) []byte {
-	p := []byte{}
+	var p []byte
 	p = append(p, 1)
 	p = append(p, b...)
 
@@ -125,7 +125,7 @@ func newPing(b []byte) []byte {
 }
 
 func newLoginSuccess() []byte {
-	p := []byte{}
+	var p []byte
 	p = append(p, 2)
 	p = append(p, make([]byte, 16)...)   // uuid
 	p = append(p, toString("Player")...) // username
@@ -134,7 +134,7 @@ func newLoginSuccess() []byte {
 }
 
 func newDisconnect(s string) []byte {
-	p := []byte{}
+	var p []byte
 	p = append(p, 0x19)
 	p = append(p, toString(s)...)
 
