@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/binary"
 	"io/ioutil"
-	"log"
 	"net"
+
+	"github.com/gidoBOSSftw5731/log"
 )
 
 func fromVarint(bytes []byte) (int, int) {
@@ -22,7 +23,7 @@ func fromVarint(bytes []byte) (int, int) {
 }
 
 func toVarint(n int) []byte {
-	var res []byte
+	res := []byte{}
 
 	for n != 0 {
 		tmp := n & 0b01111111
@@ -39,7 +40,7 @@ func toVarint(n int) []byte {
 }
 
 func toString(s string) []byte {
-	var out []byte
+	out := []byte{}
 	out = append(out, toVarint(len(s))...)
 	out = append(out, []byte(s)...)
 
@@ -54,7 +55,7 @@ func toShort(n int) []byte {
 }
 
 func readPacket(c net.Conn) ([]byte, error) {
-	var lenBytes []byte
+	lenBytes := []byte{}
 	for {
 		b := make([]byte, 1)
 		c.Read(b)
@@ -66,7 +67,7 @@ func readPacket(c net.Conn) ([]byte, error) {
 	}
 
 	pLen, _ := fromVarint(lenBytes)
-	var pData []byte
+	pData := []byte{}
 
 	recv := 0
 	tmp := make([]byte, 1024)
@@ -86,15 +87,17 @@ func readPacket(c net.Conn) ([]byte, error) {
 }
 
 func writePacket(c net.Conn, b []byte) {
+	//log.Traceln("Writing pkt")
 	sent := 0
 	for sent != len(b) {
 		n, _ := c.Write(b[sent:])
 		sent += n
 	}
+//	log.Traceln("Wrote packet len: ", sent)
 }
 
 func newPacket(b []byte) []byte {
-	var out []byte
+	out := []byte{}
 	out = append(out, toVarint(len(b))...)
 	out = append(out, b...)
 
@@ -102,7 +105,7 @@ func newPacket(b []byte) []byte {
 }
 
 func newHandshake(proto int, addr string, port int, state int) []byte {
-	var p []byte
+	p := []byte{}
 	p = append(p, 0)
 	p = append(p, toVarint(proto)...)
 	p = append(p, toString(addr)...)
@@ -117,7 +120,7 @@ func newRequest() []byte {
 }
 
 func newPing(b []byte) []byte {
-	var p []byte
+	p := []byte{}
 	p = append(p, 1)
 	p = append(p, b...)
 
@@ -125,7 +128,7 @@ func newPing(b []byte) []byte {
 }
 
 func newLoginSuccess() []byte {
-	var p []byte
+	p := []byte{}
 	p = append(p, 2)
 	p = append(p, make([]byte, 16)...)   // uuid
 	p = append(p, toString("Player")...) // username
@@ -134,7 +137,7 @@ func newLoginSuccess() []byte {
 }
 
 func newDisconnect(s string) []byte {
-	var p []byte
+	p := []byte{}
 	p = append(p, 0x19)
 	p = append(p, toString(s)...)
 
@@ -193,7 +196,10 @@ func handleConn(c net.Conn) {
 }
 
 func main() {
-	l, _ := net.Listen("tcp", ":25565")
+	l, err := net.Listen("tcp", ":25565")
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	for {
 		c, _ := l.Accept()
