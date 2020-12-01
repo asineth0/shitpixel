@@ -1,0 +1,40 @@
+{
+  "text": "You are permanently banned from this server!",
+  "color": "red",
+  "extra": [
+    {
+      "text": "\n\nReason: ",
+      "color": "gray"
+    },
+    {
+      "text": "WATCHDOG CHEAT DETECTION ",
+      "color": "white"
+    },
+    {
+      "color": "gray",
+      "italic": true,
+      "text": "[AB-1761594]"
+    },
+    {
+      "text": "\nFind out more: ",
+      "color": "gray"
+    },
+    {
+      "color": "aqua",
+      "underline": true,
+      "text": "https://www.hypixel.net/watchdog"
+    },
+    {
+      "text": "\n\nBan ID: ",
+      "color": "gray"
+    },
+    {
+      "text": "#ED21B84D",
+      "color": "white"
+    },
+    {
+      "text": "\nSharing your Ban ID may affect the processing of your appeal!",
+      "color": "gray"
+    }
+  ]
+}
