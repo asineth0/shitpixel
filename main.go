@@ -54,19 +54,27 @@ func toShort(n int) []byte {
 }
 
 func readPacket(c net.Conn) ([]byte, error) {
+	log.Printf("----\n")
+
 	var lenBytes []byte
 	for {
 		b := make([]byte, 1)
 		c.Read(b)
 		lenBytes = append(lenBytes, b[0])
 
+		log.Printf("lenByte: %x\n", b[0])
+
 		if b[0]>>7 == 0 {
 			break
 		}
 	}
 
+	log.Printf("lenBytes: %x\n", lenBytes)
+
 	pLen, _ := fromVarint(lenBytes)
 	var pData []byte
+
+	log.Printf("pLen: %d\n", pLen)
 
 	recv := 0
 	tmp := make([]byte, 1024)
@@ -81,6 +89,8 @@ func readPacket(c net.Conn) ([]byte, error) {
 
 		pData = append(pData, tmp[:n]...)
 	}
+
+	log.Printf("pData: %x\n", pData)
 
 	return pData, nil
 }
@@ -150,16 +160,11 @@ func getUpstream() []byte {
 	return newPacket(p)
 }
 
-func handleConn(c net.Conn) {
+func handlePackets(c net.Conn, queue chan []byte) {
 	state := 0
 
-	log.Printf("[+] %s\n", c.RemoteAddr().String())
-
 	for {
-		p, err := readPacket(c)
-		if err != nil || len(p) == 0 {
-			break
-		}
+		p := <-queue
 
 		// handshake
 		if p[0] == 0 && state == 0 {
@@ -187,6 +192,22 @@ func handleConn(c net.Conn) {
 			writePacket(c, newDisconnect(string(f)))
 			break
 		}
+	}
+}
+
+func handleConn(c net.Conn) {
+	log.Printf("[+] %s\n", c.RemoteAddr().String())
+
+	queue := make(chan []byte, 200)
+	go handlePackets(c, queue)
+
+	for {
+		p, err := readPacket(c)
+		if err != nil || len(p) == 0 {
+			break
+		}
+
+		queue <- p
 	}
 
 	c.Close()
