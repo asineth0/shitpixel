@@ -53,7 +53,7 @@ func toShort(n int) []byte {
 	return out
 }
 
-func readPacket(c net.Conn) ([]byte, error) {
+func readPacket(c net.Conn) []byte {
 	log.Printf("----\n")
 
 	var lenBytes []byte
@@ -82,7 +82,7 @@ func readPacket(c net.Conn) ([]byte, error) {
 		n, err := c.Read(tmp)
 
 		if err != nil {
-			return nil, err
+			return nil
 		}
 
 		recv += n
@@ -92,7 +92,7 @@ func readPacket(c net.Conn) ([]byte, error) {
 
 	log.Printf("pData: %x\n", pData)
 
-	return pData, nil
+	return pData
 }
 
 func writePacket(c net.Conn, b []byte) {
@@ -155,7 +155,7 @@ func getUpstream() []byte {
 	c, _ := net.Dial("tcp", "mc.hypixel.net:25565")
 	writePacket(c, newHandshake(754, "mc.hypixel.net", 25565, 1))
 	writePacket(c, newRequest())
-	p, _ := readPacket(c)
+	p := readPacket(c)
 
 	return newPacket(p)
 }
@@ -202,8 +202,8 @@ func handleConn(c net.Conn) {
 	go handlePackets(c, queue)
 
 	for {
-		p, err := readPacket(c)
-		if err != nil || len(p) == 0 {
+		p := readPacket(c)
+		if p == nil || len(p) == 0 {
 			break
 		}
 
